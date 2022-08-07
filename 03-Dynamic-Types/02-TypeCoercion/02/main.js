@@ -1,0 +1,11 @@
+//string '10'
+//Number -1
+//Number 1
+//Number 2
+//Number 6
+//Number -14
+//string '-95'
+//Number NaN
+//string '6px'
+//Number 1
+//Number NaN

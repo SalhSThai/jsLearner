@@ -1,0 +1,3 @@
+const checkEmptyObj = function(){
+    
+}
