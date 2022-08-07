@@ -697,13 +697,68 @@ let counting = function (array) {
 };
 console.log(counting(sales));
 // 2. จำนวนลูกค้าที่แตกต่างกัน มีใครบ้าง แต่ละคนซื้อไปยอดรวมกันเท่าไหร่ กี่เครื่อง
-let customers = function (array) {
+let customersSpend = function (array) {
+  // สร้าง Object ใหม่ ชื่อ Person มาเก็บ Key ที่เป็นชื่อ Customer แล้ว Value เป็น object ของ TotalSpend กับ Amount ที่เป็น จำนวนเคร่ือง
   let person = array.reduce((acc, item) => {
-    acc[item.customer]? acc[item.customer]+=1:acc[item.customer]=1; 
-
-
-    return acc; //?
-  }, []);
-
+    // object ในแต่ละรอบ ถูกเก็บใน Acc
+    // ตรวจสอบ ว่า Key ถูกสร้าง รียัง 
+    if (acc[item.customer]) { //ถูกสร้างแล้ว
+      // ให้เพิ่มค่า TotalSpend แล้วเพิ่มจำนวน เครื่อง
+      acc[item.customer].totalSpend += item.product.unitPrice;
+      acc[item.customer].amount += 1
+    }
+    else {//ยังไม่ถูกสร้าง
+      //สร้างขึ้นใหม่ แล้วเก็บ Object Key totalSpend กับ  amount
+      acc[item.customer] = { totalSpend: item.product.unitPrice, amount: 1 };
+    }
+    // ส่ง acc ไปรัน รอบใหม่
+    return acc;
+  }, {});
+  // person เก็บค่าทั้งหมด แล้ว ส่งออกจาก Function
+  return person;
 }
-customers(sales);
+// console.log(customersSpend(sales));
+
+// 3. ยอดขายทั้งหมด (หลังหัก discount)
+
+const totalIncome = function(array) {
+ 
+    let income = array.reduce((acc, item) => {
+
+      if (acc.total) {
+        (item.discount) ? acc.total += ((item.product.unitPrice * (1 - item.discount))) : acc.total += item.product.unitPrice;
+
+      } else {
+        (item.discount) ? acc.total = (item.product.unitPrice * (1 - item.discount)) : item.product.unitPrice;
+      }
+      acc.total = Number((acc.total).toFixed(2));
+      return acc;
+
+    }, {})
+    return income; 
+  
+}
+totalIncome(sales);
+
+
+// 4. สินค้าที่ถูกขายมี่กี่ยี่ห้อ แต่ละยี่ห้อขายไปกี่เครื่อง และ ยอดรวมเท่าไหร่
+
+function productLog(array){
+  const product = array.reduce((acc ,item) => {
+    if(acc[item.product.name]){
+        acc[item.product.name].volume += item.product.unitPrice;
+        acc[item.product.name].amount += 1
+      }
+      else {
+        acc[item.product.name] = { volume: item.product.unitPrice, amount: 1 };
+      }
+     
+     
+   
+
+    return acc;
+  },{})
+
+  return product;
+}
+productLog(sales);
