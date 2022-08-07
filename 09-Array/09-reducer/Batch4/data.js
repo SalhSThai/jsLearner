@@ -743,7 +743,7 @@ totalIncome(sales);
 
 // 4. สินค้าที่ถูกขายมี่กี่ยี่ห้อ แต่ละยี่ห้อขายไปกี่เครื่อง และ ยอดรวมเท่าไหร่
 
-function productLog(array){
+function modelLog(array){
   const product = array.reduce((acc ,item) => {
     if(acc[item.product.name]){
         acc[item.product.name].volume += item.product.unitPrice;
@@ -752,13 +752,28 @@ function productLog(array){
       else {
         acc[item.product.name] = { volume: item.product.unitPrice, amount: 1 };
       }
-     
-     
-   
-
     return acc;
   },{})
-
   return product;
 }
-productLog(sales);
+modelLog(sales);
+
+
+
+// 5. สินค้าที่ถูกขายมีกี่รุ่นในแต่ละยี่ห้อ แต่ละรุ่นขายไปกี่เครื่อง และ ยอดรวมเท่าไหร่
+
+function modelLog(array){
+  const product = array.reduce((acc ,item) => {
+    if(acc[item.product.name][item.product.model]){
+        acc[item.product.name].volume += item.product.unitPrice;
+        acc[item.product.name].amount += 1
+      }
+      else {
+        acc[item.product.name][item.product.model] = { volume: item.product.unitPrice, amount: 1 };
+        
+      }
+    return acc;//?
+  },{})
+  return product;
+}
+modelLog(sales);

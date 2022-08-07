@@ -4,4 +4,4 @@ const arr = [
   ];
 
   const map = new Map(arr)
-  map //?
+  map;//?
