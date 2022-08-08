@@ -678,19 +678,7 @@ const sales = [
   }
 ];
 
-const cus1 = {
-  id: 1,
-  product: {
-    id: 1,
-    name: 'iPhone',
-    model: '12 Pro',
-    unitPrice: 48900
-  },
-  saleDate: '01-01-2021',
-  customer: 'Sun',
-  discount: 0.2,
-  type: 'Cash'
-}
+
 // 1. จำนวน transaction ทั้งหมด
 let counting = function (array) {
   return array.length;
@@ -721,59 +709,181 @@ let customersSpend = function (array) {
 
 // 3. ยอดขายทั้งหมด (หลังหัก discount)
 
-const totalIncome = function(array) {
- 
-    let income = array.reduce((acc, item) => {
+const totalIncome = function (array) {
 
-      if (acc.total) {
-        (item.discount) ? acc.total += ((item.product.unitPrice * (1 - item.discount))) : acc.total += item.product.unitPrice;
+  let income = array.reduce((acc, item) => {
 
-      } else {
-        (item.discount) ? acc.total = (item.product.unitPrice * (1 - item.discount)) : item.product.unitPrice;
-      }
-      acc.total = Number((acc.total).toFixed(2));
-      return acc;
+    if (acc.total) {
+      (item.discount) ? acc.total += ((item.product.unitPrice * (1 - item.discount))) : acc.total += item.product.unitPrice;
 
-    }, {})
-    return income; 
-  
+    } else {
+      (item.discount) ? acc.total = (item.product.unitPrice * (1 - item.discount)) : item.product.unitPrice;
+    }
+    acc.total = Number((acc.total).toFixed(2));
+    return acc;
+
+  }, {})
+  return income;
+
 }
 totalIncome(sales);
 
 
 // 4. สินค้าที่ถูกขายมี่กี่ยี่ห้อ แต่ละยี่ห้อขายไปกี่เครื่อง และ ยอดรวมเท่าไหร่
 
-function modelLog(array){
-  const product = array.reduce((acc ,item) => {
-    if(acc[item.product.name]){
-        acc[item.product.name].volume += item.product.unitPrice;
-        acc[item.product.name].amount += 1
-      }
-      else {
-        acc[item.product.name] = { volume: item.product.unitPrice, amount: 1 };
-      }
+function productLog(array) {
+  const product = array.reduce((acc, item) => {
+    if (acc[item.product.name]) {
+      acc[item.product.name].volume += item.product.unitPrice;
+      acc[item.product.name].amount += 1
+    }
+    else {
+      acc[item.product.name] = { volume: item.product.unitPrice, amount: 1 };
+    }
     return acc;
-  },{})
+  }, {})
   return product;
 }
-modelLog(sales);
+productLog(sales);
 
 
 
 // 5. สินค้าที่ถูกขายมีกี่รุ่นในแต่ละยี่ห้อ แต่ละรุ่นขายไปกี่เครื่อง และ ยอดรวมเท่าไหร่
 
-function modelLog(array){
-  const product = array.reduce((acc ,item) => {
-    if(acc[item.product.name][item.product.model]){
-        acc[item.product.name].volume += item.product.unitPrice;
-        acc[item.product.name].amount += 1
+function modelLog(array) {
+  const product = array.reduce((acc, item) => {
+
+    if (acc[item.product.name]) {
+      if (acc[item.product.name][item.product.model]) {
+        acc[item.product.name][item.product.model].volume += item.product.unitPrice;
+        acc[item.product.name][item.product.model].amount += 1
       }
       else {
-        acc[item.product.name][item.product.model] = { volume: item.product.unitPrice, amount: 1 };
-        
+        let obj = {};
+        obj[item.product.model] = { volume: item.product.unitPrice, amount: 1 };
+        Object.assign(acc[item.product.name], { ...obj })
       }
-    return acc;//?
-  },{})
+
+    }
+    else {
+      let obj = {};
+      obj[item.product.model] = { volume: item.product.unitPrice, amount: 1 };
+      acc[item.product.name] = { ...obj }
+
+    }
+    return acc;
+  }, {})
   return product;
 }
 modelLog(sales);
+
+
+// 6. หายอดรวมของการจ่ายแต่ละประเภท (Cash, Credit, ...)
+
+function paymentLog(array) {
+  const product = array.reduce((acc, item) => {
+    if (acc[item.type]) {
+      acc[item.type].volume += item.product.unitPrice;
+      acc[item.type].amount += 1
+    }
+    else {
+      acc[item.type] = { volume: item.product.unitPrice, amount: 1 };
+    }
+    return acc;
+  }, {})
+  return product;
+}
+paymentLog(sales);
+
+// หายอดรวมในแต่ละวัน
+
+function dailyLog(array) {
+  const product = array.reduce((acc, item) => {
+    if (acc[item.saleDate]) {
+      acc[item.saleDate].volume += item.product.unitPrice;
+      acc[item.saleDate].amount += 1
+    }
+    else {
+      acc[item.saleDate] = { volume: item.product.unitPrice, amount: 1 };
+    }
+    return acc;
+  }, {})
+  return product;
+}
+dailyLog(sales);
+
+
+
+// 8. เรียงยอดขายของแต่ละรุ่นจากมากไปน้อย
+
+function modelSortLog(array) {
+  // เป้าหมาย Function  return Array ที่เก็บ Object ของ Brand + Modelเป็น Key และ Value เป็นยอดขายรวม
+  // รวมค่า ต่างๆเข้าด้วยกัน ใช้ Method Reduce 
+  const product = array.reduce((acc, item) => {
+    // ประกาศตัวแปร Key  สร้าง Key สำหรับ Object  โดยใช้ข้อมูลสอง ส่วนมาติดกัน
+    let key = `${item.product.name} ${item.product.model}`;
+    // ทำการตรวจสอบ ว่า  Key ใหม่ มีค่าใน Acc หรือไม่
+    let keyIndex = acc.findIndex(item => Object.keys(item).includes(key));
+
+    //ใช้ if else แยก ประเภท
+    if (keyIndex>=0) {
+      // ถ้ามี Key แล้ว จะได้ Index ของKey มาเพื่อใช้เข้าถึง Object ของรุ่นนั้นๆ
+      acc[keyIndex][`${item.product.name} ${item.product.model}`] += item.product.unitPrice;
+      acc[keyIndex]['amount'] += 1;
+    } else {
+      // ถ้าไม่มี Key ให้สร้าง Object มา Push ใส่ Acc
+      let obj = {};
+      obj[`${item.product.name} ${item.product.model}`] = item.product.unitPrice;
+      obj[`amount`] = 1;
+      acc.push({ ...obj })
+      delete obj[`${item.product.name} ${item.product.model}`];
+    }
+    return acc;
+  }, [])
+
+
+  const sorted = product.sort((a,b) => (Object.values(a)[0] < Object.values(b)[0])? 1:-1);
+  return sorted;
+}
+modelSortLog(sales);
+
+
+// 9. เรียงลูกค้าที่ซื้อมากที่สุดจากมากไปน้อย
+
+
+function customerDetail(array){
+  const arr = array.reduce((acc,item) => {
+      
+      // let index =  Object.keys(item).includes(key);  
+      if ( acc[item.customer][`${item.product.name} ${item.product.model}`]||acc[item.customer]) {
+      acc[item.customer][`${item.product.name} ${item.product.model}`] += item.product.unitPrice;
+      acc[item.customer]['amount'] += 1;
+    } else {
+      let obj = {};
+      obj[`${item.product.name} ${item.product.model}`] = item.product.unitPrice;
+      obj[`amount`] = 1;
+      acc[item.customer] = {...obj};
+      delete obj[`${item.product.name} ${item.product.model}`];
+    }
+
+  } , {})
+
+  return arr;//?
+}
+customerDetail(sales);
+
+
+
+const cus1 = {
+  id: 1,
+  product: {
+    id: 1,
+    name: 'iPhone',
+    model: '12 Pro',
+    unitPrice: 48900
+  },
+  saleDate: '01-01-2021',
+  customer: 'Sun',
+  discount: 0.2,
+  type: 'Cash'
+}
